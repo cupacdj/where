@@ -1,0 +1,66 @@
+# Dependencies
+node_modules/
+
+# Expo / build artifacts
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# React Native generated native projects (kept out until eject/prebuild)
+ios/
+android/
+
+# Caches / Metro
+.metro-health-check*
+.expo-shared/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.*
+.env.example
+.env*.local
+
+# Credentials / signing
+*.jks
+*.keystore
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+
+# Kotlin / Gradle
+.kotlin/
+.gradle/
+*.orig.*
+
+# Debug / logs
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+pnpm-debug.log*
+
+# Coverage
+coverage/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+
+# Misc local overrides
+*.local.json
+
+# Temporary
+*.swp
+
+# vscode settings
+.vscode/
+.history/
+.settings/
