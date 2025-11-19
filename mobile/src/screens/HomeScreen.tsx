@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { placesApi } from '../api/placesApi';
 import { PlaceCard } from '../components/PlaceCard';
@@ -12,7 +13,7 @@ export const HomeScreen: React.FC = () => {
   });
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top','left','right']}>
       <Text style={styles.title}>Recommended places</Text>
 
       {isLoading && <Text style={styles.subtle}>Loading...</Text>}
@@ -24,25 +25,25 @@ export const HomeScreen: React.FC = () => {
         renderItem={({ item }) => <PlaceCard place={item} />}
         contentContainerStyle={{ paddingBottom: 32 }}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: '#f1f5f9',
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 12,
   },
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#f9fafb',
+    color: '#0f172a',
     marginBottom: 12,
   },
   subtle: {
-    color: '#9ca3af',
+    color: '#475569',
     marginBottom: 8,
   },
 });
