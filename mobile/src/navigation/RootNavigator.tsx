@@ -3,6 +3,7 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import { HomeScreen } from '../screens/HomeScreen';
 import { AccountScreen } from '../screens/AccountScreen';
 import { AssistantScreen } from '../screens/AssistantScreen';
+import { SearchScreen } from '../screens/SearchScreen';
 import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,6 +14,7 @@ export const RootNavigator = () => {
   const insets = useSafeAreaInsets();
   return (
     <Tab.Navigator
+      initialRouteName="Home"
       tabBarPosition="bottom"
       screenOptions={{
         tabBarShowIcon: true,
@@ -46,11 +48,19 @@ export const RootNavigator = () => {
           tabBarIcon: ({ color }) => <Ionicons name="person" size={22} color={color} />,
         }}
       />
+      
       <Tab.Screen
         name="Home"
         component={HomeScreen}
         options={{
           tabBarIcon: ({ color }) => <Ionicons name="home" size={22} color={color} />,
+        }}
+      />
+      <Tab.Screen
+        name="Search"
+        component={SearchScreen}
+        options={{
+          tabBarIcon: ({ color }) => <Ionicons name="search" size={22} color={color} />,
         }}
       />
       <Tab.Screen
