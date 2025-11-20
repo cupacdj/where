@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Image, KeyboardAvoidingView, Platform, ScrollView, TouchableWithoutFeedback } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Image, KeyboardAvoidingView, Platform, ScrollView, TouchableWithoutFeedback, Animated, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { AuthForm } from '../components/AuthForm';
@@ -15,8 +15,44 @@ export const AccountScreen: React.FC = () => {
   const [editPasswordNext, setEditPasswordNext] = useState('');
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const [avatarLoading, setAvatarLoading] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
 
-  if (loading) return <SafeAreaView style={styles.container}><Text style={styles.subtle}>Loading...</Text></SafeAreaView>;
+  useEffect(() => {
+    if (user) {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          tension: 40,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          tension: 50,
+          friction: 7,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [user]);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0284c7" />
+          <Text style={styles.loadingText}>Loading profile...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const pickAvatar = async () => {
     setAvatarLoading(true);
@@ -72,39 +108,79 @@ export const AccountScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top','left','right']}>
-      <View style={styles.topBar}>
-        {user && (
-          <>
-            <TouchableOpacity onPress={logout} style={styles.topIconBtn}>
-              <Ionicons name="log-out-outline" size={22} color="#dc2626" />
+      {user ? (
+        <Animated.View
+          style={[
+            styles.profileContent,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          <View style={styles.topBar}>
+            <TouchableOpacity
+              onPress={logout}
+              style={[styles.topIconBtn, styles.logoutBtn]}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="log-out-outline" size={20} color="#dc2626" />
+              <Text style={styles.logoutText}>Logout</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={openSettings} style={styles.topIconBtn}>
+            <TouchableOpacity onPress={openSettings} style={styles.topIconBtn} activeOpacity={0.7}>
               <Ionicons name="settings-outline" size={22} color="#0f172a" />
             </TouchableOpacity>
-          </>
-        )}
-      </View>
-      {user ? (
-        <>
-          {/* Avatar */}
-          <TouchableOpacity style={styles.avatarWrapper} onPress={pickAvatar} disabled={avatarLoading}>
-            {user.avatarUri ? (
-              <Image source={{ uri: user.avatarUri }} style={styles.avatarImg} />
-            ) : (
-              <Text style={styles.avatarInitials}>{(user.name?.[0] || '?').toUpperCase()}{(user.surname?.[0] || '').toUpperCase()}</Text>
-            )}
-            {avatarLoading && <View style={styles.avatarOverlay}><Text style={styles.avatarOverlayText}>...</Text></View>}
-          </TouchableOpacity>
+          </View>
+
+          <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+            <TouchableOpacity
+              style={styles.avatarWrapper}
+              onPress={pickAvatar}
+              disabled={avatarLoading}
+              activeOpacity={0.8}
+            >
+              {user.avatarUri ? (
+                <Image source={{ uri: user.avatarUri }} style={styles.avatarImg} />
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <Text style={styles.avatarInitials}>
+                    {(user.name?.[0] || '?').toUpperCase()}{(user.surname?.[0] || '').toUpperCase()}
+                  </Text>
+                </View>
+              )}
+              {avatarLoading && (
+                <View style={styles.avatarOverlay}>
+                  <ActivityIndicator color="#ffffff" size="small" />
+                </View>
+              )}
+              <View style={styles.avatarBadge}>
+                <Ionicons name="camera" size={16} color="#ffffff" />
+              </View>
+            </TouchableOpacity>
+          </Animated.View>
+
           <Text style={styles.nameText}>{[user.name, user.surname].filter(Boolean).join(' ')}</Text>
           <Text style={styles.emailText}>{user.email}</Text>
 
-          <TouchableOpacity style={styles.favBtn}>
-            <Ionicons name="heart-outline" size={18} color="#0f172a" />
-            <Text style={styles.favBtnText}>Favorites</Text>
-          </TouchableOpacity>
+          <View style={styles.statsRow}>
+            <View style={styles.statCard}>
+              <Ionicons name="heart" size={24} color="#dc2626" />
+              <Text style={styles.statNumber}>0</Text>
+              <Text style={styles.statLabel}>Favorites</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Ionicons name="location" size={24} color="#0284c7" />
+              <Text style={styles.statNumber}>0</Text>
+              <Text style={styles.statLabel}>Visited</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Ionicons name="star" size={24} color="#f59e0b" />
+              <Text style={styles.statNumber}>0</Text>
+              <Text style={styles.statLabel}>Reviews</Text>
+            </View>
+          </View>
 
-          {/* Modal unchanged */}
-          <Modal visible={settingsOpen} transparent animationType="slide">
+          <Modal visible={settingsOpen} transparent animationType="fade">
             <TouchableOpacity
               style={styles.modalBackdrop}
               activeOpacity={1}
@@ -112,7 +188,10 @@ export const AccountScreen: React.FC = () => {
             >
               <TouchableWithoutFeedback>
                 <View style={styles.modalCard}>
-                  <Text style={styles.modalTitle}>Edit Profile</Text>
+                  <View style={styles.modalHeader}>
+                    <Ionicons name="person-circle-outline" size={32} color="#0284c7" />
+                    <Text style={styles.modalTitle}>Edit Profile</Text>
+                  </View>
                   <TextInput
                     placeholder="Name"
                     placeholderTextColor="#94a3b8"
@@ -147,19 +226,27 @@ export const AccountScreen: React.FC = () => {
                     <Text style={{ color: '#dc2626', fontSize: 12 }}>{settingsError}</Text>
                   )}
                   <View style={styles.modalButtons}>
-                    <TouchableOpacity style={[styles.modalBtn, { backgroundColor: '#38bdf8' }]} onPress={saveSettings}>
-                      <Text style={styles.modalBtnText}>Save</Text>
+                    <TouchableOpacity
+                      style={[styles.modalBtn, styles.modalBtnPrimary]}
+                      onPress={saveSettings}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="checkmark-circle" size={20} color="#ffffff" />
+                      <Text style={styles.modalBtnText}>Save Changes</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={[styles.modalBtn, { backgroundColor: '#64748b' }]} onPress={() => setSettingsOpen(false)}>
-                      <Text style={styles.modalBtnText}>Cancel</Text>
+                    <TouchableOpacity
+                      style={[styles.modalBtn, styles.modalBtnSecondary]}
+                      onPress={() => setSettingsOpen(false)}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={[styles.modalBtnText, { color: '#64748b' }]}>Cancel</Text>
                     </TouchableOpacity>
                   </View>
-                  <Text style={styles.note}>Password change is local placeholder.</Text>
                 </View>
               </TouchableWithoutFeedback>
             </TouchableOpacity>
           </Modal>
-        </>
+        </Animated.View>
       ) : (
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -183,91 +270,217 @@ export const AccountScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 16,
-    paddingTop: 12,
+    backgroundColor: '#f8fafc',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+  },
+  loadingText: {
+    color: '#64748b',
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  profileContent: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 16,
   },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 24,
   },
   topIconBtn: {
     backgroundColor: '#ffffff',
-    padding: 10,
-    borderRadius: 24,
-    elevation: 3,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 16,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  subtle: { color: '#475569' },
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+  },
+  logoutText: {
+    color: '#dc2626',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   avatarWrapper: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#e2e8f0',
+    width: 140,
+    height: 140,
     alignSelf: 'center',
+    marginBottom: 20,
+    position: 'relative',
+  },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 70,
+  },
+  avatarPlaceholder: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 70,
+    backgroundColor: '#dbeafe',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
-    position: 'relative',
-    overflow: 'hidden',
+    borderWidth: 3,
+    borderColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
   },
-  avatarImg: { width: '100%', height: '100%' },
-  avatarInitials: { fontSize: 40, fontWeight: '700', color: '#334155' },
+  avatarInitials: {
+    fontSize: 48,
+    fontWeight: '700',
+    color: '#0284c7',
+  },
+  avatarBadge: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    backgroundColor: '#0284c7',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
   avatarOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15,23,42,0.4)',
+    backgroundColor: 'rgba(15,23,42,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 70,
   },
-  avatarOverlayText: { color: '#fff', fontSize: 20 },
-  nameText: { fontSize: 20, fontWeight: '600', textAlign: 'center', color: '#0f172a' },
-  emailText: { fontSize: 14, textAlign: 'center', color: '#475569', marginTop: 4, marginBottom: 16 },
-  favBtn: {
+  nameText: {
+    fontSize: 24,
+    fontWeight: '700',
+    textAlign: 'center',
+    color: '#0f172a',
+    marginBottom: 4,
+  },
+  emailText: {
+    fontSize: 15,
+    textAlign: 'center',
+    color: '#64748b',
+    fontWeight: '500',
+    marginBottom: 24,
+  },
+  statsRow: {
     flexDirection: 'row',
-    alignSelf: 'center',
-    backgroundColor: '#ffffff',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 30,
-    gap: 8,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    marginBottom: 20,
+    gap: 12,
+    marginBottom: 24,
   },
-  favBtnText: { fontSize: 14, fontWeight: '600', color: '#0f172a' },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    padding: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    gap: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#64748b',
+    fontWeight: '600',
+  },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
-    padding: 24,
+    padding: 20,
   },
   modalCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
-    gap: 12,
-    elevation: 4,
+    borderRadius: 24,
+    padding: 24,
+    gap: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
   },
-  modalTitle: { fontSize: 18, fontWeight: '700', color: '#0f172a' },
-  modalInput: {
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
-    fontSize: 14,
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 8,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '700',
     color: '#0f172a',
   },
-  modalButtons: { flexDirection: 'row', gap: 10, marginTop: 4 },
-  modalBtn: { flex: 1, paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
-  modalBtnText: { color: '#ffffff', fontWeight: '600' },
-  note: { fontSize: 11, color: '#64748b', textAlign: 'center', marginTop: 4 },
+  modalInput: {
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    fontSize: 15,
+    color: '#0f172a',
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+    fontWeight: '500',
+  },
+  modalButtons: {
+    gap: 10,
+    marginTop: 8,
+  },
+  modalBtn: {
+    flexDirection: 'row',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  modalBtnPrimary: {
+    backgroundColor: '#0284c7',
+    shadowColor: '#0284c7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  modalBtnSecondary: {
+    backgroundColor: '#f1f5f9',
+  },
+  modalBtnText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 15,
+  },
   authCenter: {
     width: '100%',
     maxWidth: 420,
@@ -277,5 +490,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     paddingBottom: 24,
+    paddingHorizontal: 20,
   },
 });

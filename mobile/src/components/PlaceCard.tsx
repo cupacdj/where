@@ -1,16 +1,70 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Image, Animated, TouchableOpacity } from 'react-native';
 import type { Place } from '../types';
 
 interface Props {
   place: Place;
+  index: number;
 }
 
-export const PlaceCard: React.FC<Props> = ({ place }) => {
+export const PlaceCard: React.FC<Props> = ({ place, index }) => {
   const primaryImage = place.images.find((img) => img.isPrimary) ?? place.images[0];
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        delay: index * 100,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        tension: 50,
+        friction: 7,
+        delay: index * 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.97,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      tension: 50,
+      friction: 3,
+      useNativeDriver: true,
+    }).start();
+  };
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity
+      activeOpacity={1}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+    >
+      <Animated.View
+        style={[
+          styles.card,
+          {
+            opacity: fadeAnim,
+            transform: [
+              { translateY: slideAnim },
+              { scale: scaleAnim },
+            ],
+          },
+        ]}
+      >
       {primaryImage ? (
         <Image source={{ uri: primaryImage.url }} style={styles.image} />
       ) : (
@@ -35,59 +89,70 @@ export const PlaceCard: React.FC<Props> = ({ place }) => {
           ))}
         </View>
       </View>
-    </View>
+      </Animated.View>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#020617',
-    borderRadius: 16,
-    marginBottom: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    marginBottom: 16,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#1f2933',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   image: {
     width: '100%',
-    height: 160,
+    height: 200,
   },
   imagePlaceholder: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#111827',
+    backgroundColor: '#f1f5f9',
   },
   imagePlaceholderText: {
-    color: '#6b7280',
+    color: '#94a3b8',
+    fontSize: 14,
+    fontWeight: '500',
   },
   content: {
-    padding: 12,
+    padding: 16,
   },
   name: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#f9fafb',
-    marginBottom: 4,
+    fontSize: 19,
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 6,
+    letterSpacing: -0.3,
   },
   meta: {
-    color: '#9ca3af',
-    fontSize: 13,
-    marginBottom: 2,
+    color: '#64748b',
+    fontSize: 14,
+    marginBottom: 4,
+    fontWeight: '500',
   },
   tagsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 6,
-    gap: 4,
+    marginTop: 10,
+    gap: 6,
   },
   tagChip: {
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    backgroundColor: '#111827',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: '#f0f9ff',
+    borderWidth: 1,
+    borderColor: '#bae6fd',
   },
   tagText: {
-    color: '#f97316',
-    fontSize: 11,
+    color: '#0369a1',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
