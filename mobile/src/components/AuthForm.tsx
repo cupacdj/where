@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, TextInput, Text, TouchableOpacity, StyleSheet, Animated, ActivityIndicator } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { Ionicons } from '@expo/vector-icons';
 
 export const AuthForm: React.FC = () => {
   const { signUp, login } = useAuth();
   const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
 
   // login
   const [identifier, setIdentifier] = useState(''); // email or username
@@ -21,6 +24,22 @@ export const AuthForm: React.FC = () => {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        tension: 40,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  useEffect(() => {
     if (!busy) return;
     const id = setTimeout(() => {
       setBusy(false);
@@ -30,7 +49,22 @@ export const AuthForm: React.FC = () => {
   }, [busy]);
 
   useEffect(() => {
-    // clear form + errors when switching modes
+    fadeAnim.setValue(0);
+    slideAnim.setValue(20);
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
     setError(null);
     setPassword('');
     if (mode === 'login') {
@@ -94,8 +128,21 @@ export const AuthForm: React.FC = () => {
   };
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.header}>{mode === 'signup' ? 'Create account' : 'Login'}</Text>
+    <Animated.View
+      style={[
+        styles.card,
+        {
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }],
+        },
+      ]}
+    >
+      <View style={styles.headerContainer}>
+        <Text style={styles.header}>{mode === 'signup' ? 'Create Account' : 'Welcome Back'}</Text>
+        <Text style={styles.headerSubtitle}>
+          {mode === 'signup' ? 'Join us to discover amazing places' : 'Login to continue your journey'}
+        </Text>
+      </View>
 
       {mode === 'signup' ? (
         <>
@@ -173,12 +220,24 @@ export const AuthForm: React.FC = () => {
         </>
       )}
 
-      <TouchableOpacity style={[styles.button, busy && { opacity: 0.6 }]} onPress={submit} disabled={busy}>
-        <Text style={styles.buttonText}>
-          {busy ? 'Please wait...' : mode === 'signup' ? 'Sign Up' : 'Login'}
-        </Text>
+      <TouchableOpacity style={[styles.button, busy && styles.buttonBusy]} onPress={submit} disabled={busy}>
+        {busy ? (
+          <View style={styles.buttonContent}>
+            <ActivityIndicator color="#ffffff" size="small" />
+            <Text style={styles.buttonText}>Processing...</Text>
+          </View>
+        ) : (
+          <Text style={styles.buttonText}>
+            {mode === 'signup' ? 'Create Account' : 'Sign In'}
+          </Text>
+        )}
       </TouchableOpacity>
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && (
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle" size={16} color="#dc2626" />
+          <Text style={styles.error}>{error}</Text>
+        </View>
+      )}
 
       <TouchableOpacity onPress={() => setMode(mode === 'signup' ? 'login' : 'signup')}>
         <Text style={styles.switch}>
@@ -186,56 +245,102 @@ export const AuthForm: React.FC = () => {
         </Text>
       </TouchableOpacity>
 
-    </View>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#ffffff',
-    padding: 16,
-    borderRadius: 16,
-    gap: 12,
-    elevation: 2,
+    padding: 24,
+    borderRadius: 24,
+    gap: 14,
     shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 8,
   },
-  header: { fontSize: 20, fontWeight: '700', color: '#0f172a' },
-  input: {
-    backgroundColor: '#f1f5f9',
+  headerContainer: {
+    marginBottom: 8,
+  },
+  header: {
+    fontSize: 26,
+    fontWeight: '700',
     color: '#0f172a',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 10,
-    fontSize: 14,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    marginBottom: 6,
   },
-  genderRow: { flexDirection: 'row', gap: 10 },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  input: {
+    backgroundColor: '#f8fafc',
+    color: '#0f172a',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    fontSize: 15,
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+    fontWeight: '500',
+  },
+  genderRow: { flexDirection: 'row', gap: 12 },
   genderBtn: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
-    paddingVertical: 12,
-    borderRadius: 10,
+    backgroundColor: '#f8fafc',
+    paddingVertical: 14,
+    borderRadius: 12,
     alignItems: 'center',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#e2e8f0',
   },
   genderBtnActive: {
-    backgroundColor: '#e0f2fe',
-    borderColor: '#38bdf8',
+    backgroundColor: '#dbeafe',
+    borderColor: '#0284c7',
+    borderWidth: 2,
   },
   genderText: { color: '#475569', fontWeight: '600' },
   genderTextActive: { color: '#0369a1' },
   button: {
     backgroundColor: '#0284c7',
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: 16,
+    borderRadius: 14,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#0284c7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+    marginTop: 4,
   },
-  buttonText: { color: '#ffffff', fontWeight: '600', fontSize: 15 },
-  switch: { color: '#0f172a', textAlign: 'center', marginTop: 4, fontWeight: '500' },
-  error: { color: '#dc2626', fontSize: 12, lineHeight: 16 },
+  buttonBusy: {
+    backgroundColor: '#64748b',
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  buttonText: { color: '#ffffff', fontWeight: '700', fontSize: 16 },
+  switch: {
+    color: '#0284c7',
+    textAlign: 'center',
+    marginTop: 8,
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#fee2e2',
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#fecaca',
+  },
+  error: { flex: 1, color: '#dc2626', fontSize: 13, lineHeight: 18, fontWeight: '500' },
 });

@@ -16,39 +16,55 @@ export const RootNavigator = () => {
       tabBarPosition="bottom"
       screenOptions={{
         tabBarShowIcon: true,
-        tabBarIndicatorStyle: { backgroundColor: '#0284c7', height: 3, borderRadius: 3 },
+        tabBarIndicatorStyle: {
+          backgroundColor: '#0284c7',
+          height: 4,
+          borderRadius: 2,
+        },
         tabBarStyle: {
           backgroundColor: '#ffffff',
           borderTopWidth: 1,
           borderTopColor: '#e2e8f0',
-          height: 62 + insets.bottom,
+          height: 64 + insets.bottom,
           paddingBottom: insets.bottom,
-          paddingTop: 6,
+          paddingTop: 8,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.06,
+          shadowRadius: 8,
         },
         tabBarActiveTintColor: '#0284c7',
-        tabBarInactiveTintColor: '#64748b',
-        tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
+        tabBarInactiveTintColor: '#94a3b8',
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '700',
+          marginTop: 4,
+        },
+        tabBarItemStyle: {
+          paddingTop: 2,
+        },
       }}
     >
       <Tab.Screen
         name="Account"
         component={AccountScreen}
         options={{
-          tabBarIcon: ({ color }) => <Ionicons name="person" size={20} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="person" size={22} color={color} />,
         }}
       />
       <Tab.Screen
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarIcon: ({ color }) => <Ionicons name="home" size={20} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="home" size={22} color={color} />,
         }}
       />
       <Tab.Screen
         name="Assistant"
         component={AssistantScreen}
         options={{
-          tabBarIcon: ({ color }) => <Ionicons name="chatbubbles" size={20} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="chatbubbles" size={22} color={color} />,
         }}
       />
     </Tab.Navigator>

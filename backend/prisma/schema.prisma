@@ -46,6 +46,17 @@ enum Gender {
   WOMAN
 }
 
+enum Weekday {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
@@ -94,7 +105,25 @@ model Place {
   favorites    Favorite[]
   images       PlaceImage[]
   stats        PlaceStats?
+
+  workingHours PlaceWorkingHour[]
 }
+
+model PlaceWorkingHour {
+  id        String   @id @default(uuid())
+  placeId   String
+
+  dayOfWeek Weekday
+  openTime  String?   // e.g. "08:00"
+  closeTime String?   // e.g. "23:30"
+  isClosed  Boolean   @default(false)
+
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([placeId, dayOfWeek]) // one row per day per place
+  @@index([placeId])
+}
+
 
 model Tag {
   id           String       @id @default(uuid())
@@ -170,16 +199,20 @@ model Review {
 }
 
 model PlaceImage {
-  id          String      @id @default(uuid())
-  placeId     String
+   id        String      @id @default(uuid())
+  placeId   String
 
-  url         String
-  source      PlaceSource @default(GOOGLE_MAPS)
-  isPrimary   Boolean     @default(false)
+  url       String                      // where file is accessible
+  source    PlaceSource @default(MANUAL) // MANUAL, GOOGLE_MAPS, etc.
+  isPrimary Boolean     @default(false)  // for main cover image
+  order     Int         @default(0)      // for sorting (gallery order)
+  altText   String?                     // optional description
 
-  createdAt   DateTime    @default(now())
+  createdAt DateTime    @default(now())
 
-  place       Place       @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  place     Place       @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@index([placeId])
 }
 
 model PlaceStats {
