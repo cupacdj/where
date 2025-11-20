@@ -35,15 +35,8 @@ export const RootNavigator = () => {
           shadowRadius: 8,
         },
         tabBarActiveTintColor: '#0284c7',
-        tabBarInactiveTintColor: '#94a3b8',
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '700',
-          marginTop: 4,
-        },
-        tabBarItemStyle: {
-          paddingTop: 2,
-        },
+        tabBarInactiveTintColor: '#64748b',
+        tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
       }}
     >
       <Tab.Screen
