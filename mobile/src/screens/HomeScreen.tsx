@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -11,26 +11,12 @@ import { useQuery } from '@tanstack/react-query';
 import { placesApi } from '../api/placesApi';
 import { PlaceCard } from '../components/PlaceCard';
 import type { Place } from '../types';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 export const HomeScreen: React.FC = () => {
   const { data, isLoading, error } = useQuery<Place[]>({
     queryKey: ['places'],
     queryFn: () => placesApi.getAll(),
   });
-
-  const navigation = useNavigation<any>();
-  const parentNav = navigation.getParent();
-
-  // Ensure swipe is enabled by default when this screen is focused
-  useFocusEffect(
-    React.useCallback(() => {
-      parentNav?.setOptions({ swipeEnabled: true });
-      return () => {
-        parentNav?.setOptions({ swipeEnabled: true });
-      };
-    }, [parentNav])
-  );
 
   const grouped = (data || []).reduce<Record<string, Place[]>>((acc, p) => {
     (acc[p.type] = acc[p.type] || []).push(p);
@@ -83,15 +69,6 @@ export const HomeScreen: React.FC = () => {
                 nestedScrollEnabled
                 directionalLockEnabled
                 decelerationRate="fast"
-                onScrollBeginDrag={() => {
-                  parentNav?.setOptions({ swipeEnabled: false });
-                }}
-                onMomentumScrollEnd={() => {
-                  parentNav?.setOptions({ swipeEnabled: true });
-                }}
-                onScrollEndDrag={() => {
-                  parentNav?.setOptions({ swipeEnabled: true });
-                }}
               >
                 {places.map((p, idx) => (
                   <PlaceCard key={p.id} place={p} index={idx} horizontal />

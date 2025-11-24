@@ -5,7 +5,6 @@ import { AccountScreen } from '../screens/AccountScreen';
 import { AssistantScreen } from '../screens/AssistantScreen';
 import { SearchScreen } from '../screens/SearchScreen';
 import { Ionicons } from '@expo/vector-icons';
-import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { PlaceDetailsScreen } from '../screens/PlaceDetailsScreen';
@@ -22,11 +21,14 @@ const HomeStackScreen = () => (
 
 export const RootNavigator = () => {
   const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       initialRouteName="Home"
       tabBarPosition="bottom"
-      screenOptions={{
+      screenOptions={({ route }) => ({
+        // 👇 swipe BETWEEN TABS is disabled ONLY on Home
+        swipeEnabled: route.name !== 'Home',
         tabBarShowIcon: true,
         tabBarIndicatorStyle: {
           backgroundColor: '#0284c7',
@@ -49,35 +51,42 @@ export const RootNavigator = () => {
         tabBarActiveTintColor: '#0284c7',
         tabBarInactiveTintColor: '#64748b',
         tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
-      }}
+      })}
     >
       <Tab.Screen
         name="Account"
         component={AccountScreen}
         options={{
-          tabBarIcon: ({ color }) => <Ionicons name="person" size={22} color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="person" size={22} color={color} />
+          ),
         }}
       />
-      
       <Tab.Screen
         name="Home"
         component={HomeStackScreen}
         options={{
-          tabBarIcon: ({ color }) => <Ionicons name="home" size={22} color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="home" size={22} color={color} />
+          ),
         }}
       />
       <Tab.Screen
         name="Search"
         component={SearchScreen}
         options={{
-          tabBarIcon: ({ color }) => <Ionicons name="search" size={22} color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="search" size={22} color={color} />
+          ),
         }}
       />
       <Tab.Screen
         name="Assistant"
         component={AssistantScreen}
         options={{
-          tabBarIcon: ({ color }) => <Ionicons name="chatbubbles" size={22} color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="chatbubbles" size={22} color={color} />
+          ),
         }}
       />
     </Tab.Navigator>
