@@ -1,57 +1,105 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Animated, ActivityIndicator, RefreshControl } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  ScrollView,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { placesApi } from '../api/placesApi';
 import { PlaceCard } from '../components/PlaceCard';
 import type { Place } from '../types';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 export const HomeScreen: React.FC = () => {
-  const { data, isLoading, error, refetch } = useQuery<Place[]>({
+  const { data, isLoading, error } = useQuery<Place[]>({
     queryKey: ['places'],
     queryFn: () => placesApi.getAll(),
   });
-  const [refreshing, setRefreshing] = useState(false);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  };
+  const navigation = useNavigation<any>();
+  const parentNav = navigation.getParent();
+
+  // Ensure swipe is enabled by default when this screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      parentNav?.setOptions({ swipeEnabled: true });
+      return () => {
+        parentNav?.setOptions({ swipeEnabled: true });
+      };
+    }, [parentNav])
+  );
+
+  const grouped = (data || []).reduce<Record<string, Place[]>>((acc, p) => {
+    (acc[p.type] = acc[p.type] || []).push(p);
+    return acc;
+  }, {});
+
+  if (isLoading && !data) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Discover Places</Text>
+          <Text style={styles.subtitle}>Find your next favorite spot</Text>
+        </View>
+
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0284c7" />
+          <Text style={styles.loadingText}>Finding amazing places...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top','left','right']}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <Text style={styles.title}>Discover Places</Text>
         <Text style={styles.subtitle}>Find your next favorite spot</Text>
       </View>
 
-      {isLoading && !data ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0284c7" />
-          <Text style={styles.loadingText}>Finding amazing places...</Text>
-        </View>
-      ) : error ? (
+      {error ? (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Unable to load places</Text>
-          <Text style={styles.errorSubtext}>Check your connection and try again</Text>
+          <Text style={styles.errorSubtext}>
+            Check your connection and try again
+          </Text>
         </View>
       ) : (
-        <FlatList
-          data={data || []}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item, index }) => <PlaceCard place={item} index={index} />}
-          contentContainerStyle={styles.listContent}
+        <ScrollView
+          contentContainerStyle={styles.sections}
           showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor="#0284c7"
-              colors={['#0284c7']}
-            />
-          }
-        />
+        >
+          {Object.entries(grouped).map(([type, places]) => (
+            <View key={type} style={styles.section}>
+              <Text style={styles.sectionTitle}>{type}</Text>
+
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingRight: 10 }}
+                nestedScrollEnabled
+                directionalLockEnabled
+                decelerationRate="fast"
+                onScrollBeginDrag={() => {
+                  parentNav?.setOptions({ swipeEnabled: false });
+                }}
+                onMomentumScrollEnd={() => {
+                  parentNav?.setOptions({ swipeEnabled: true });
+                }}
+                onScrollEndDrag={() => {
+                  parentNav?.setOptions({ swipeEnabled: true });
+                }}
+              >
+                {places.map((p, idx) => (
+                  <PlaceCard key={p.id} place={p} index={idx} horizontal />
+                ))}
+              </ScrollView>
+            </View>
+          ))}
+        </ScrollView>
       )}
     </SafeAreaView>
   );
@@ -110,9 +158,12 @@ const styles = StyleSheet.create({
     color: '#64748b',
     textAlign: 'center',
   },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 32,
+  sections: { paddingHorizontal: 16, paddingBottom: 32 },
+  section: { marginBottom: 32 },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0284c7',
+    marginBottom: 12,
   },
 });

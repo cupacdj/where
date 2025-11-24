@@ -1,14 +1,26 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Image, Animated, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import type { Place } from '../types';
+import { API_BASE_URL } from '../api/httpClient';
 
 interface Props {
-  place: Place;
+  place: any; // can be full Place or lightweight { id, name, primaryImage, ... }
   index: number;
+  horizontal?: boolean; // added
 }
 
-export const PlaceCard: React.FC<Props> = ({ place, index }) => {
-  const primaryImage = place.images.find((img) => img.isPrimary) ?? place.images[0];
+export const PlaceCard: React.FC<Props> = ({ place, index, horizontal }) => {
+  const nav = useNavigation<any>();
+
+  // Defensive handling (images may be undefined on lightweight list items)
+  const imagesArray: Array<{ url: string; isPrimary?: boolean }> | undefined = Array.isArray(place.images) ? place.images : undefined;
+  const primaryFromArray = imagesArray?.find(img => img.isPrimary) ?? (imagesArray ? imagesArray[0] : undefined);
+  const imageUrlRaw = primaryFromArray?.url || place.primaryImage || null;
+  const imageUrl = imageUrlRaw && imageUrlRaw.startsWith('/')
+    ? `${API_BASE_URL}${imageUrlRaw}`
+    : imageUrlRaw;
+
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -29,7 +41,7 @@ export const PlaceCard: React.FC<Props> = ({ place, index }) => {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fadeAnim, slideAnim, index]);
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
@@ -47,48 +59,58 @@ export const PlaceCard: React.FC<Props> = ({ place, index }) => {
     }).start();
   };
 
+  const hasTags = Array.isArray(place.tags) && place.tags.length > 0;
+  const hasStatsRating = place?.stats?.avgRating != null;
+
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.9}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
+      onPress={() => nav.navigate('PlaceDetails', { placeId: place.id })}
     >
       <Animated.View
         style={[
           styles.card,
+          horizontal && styles.cardHorizontal, // added
           {
             opacity: fadeAnim,
-            transform: [
-              { translateY: slideAnim },
-              { scale: scaleAnim },
-            ],
+            transform: [{ translateY: slideAnim }, { scale: scaleAnim }],
           },
         ]}
       >
-      {primaryImage ? (
-        <Image source={{ uri: primaryImage.url }} style={styles.image} />
-      ) : (
-        <View style={[styles.image, styles.imagePlaceholder]}>
-          <Text style={styles.imagePlaceholderText}>No image</Text>
-        </View>
-      )}
-      <View style={styles.content}>
-        <Text style={styles.name}>{place.name}</Text>
-        <Text style={styles.meta}>
-          {place.city}
-          {place.address ? ` • ${place.address}` : ''}
-        </Text>
-        {place.stats?.avgRating && (
-          <Text style={styles.meta}>⭐ {place.stats.avgRating.toFixed(1)} rating</Text>
+        {imageUrl ? (
+          <Image source={{ uri: imageUrl }} style={[styles.image, horizontal && styles.imageHorizontal]} />
+        ) : (
+          <View style={[styles.image, horizontal && styles.imageHorizontal, styles.imagePlaceholder]}>
+            <Text style={styles.imagePlaceholderText}>No image</Text>
+          </View>
         )}
-        <View style={styles.tagsRow}>
-          {place.tags.slice(0, 3).map((pt) => (
-            <View key={pt.tagId} style={styles.tagChip}>
-              <Text style={styles.tagText}>{pt.tag.displayName || pt.tag.name}</Text>
+
+        <View style={styles.content}>
+          <Text style={styles.name}>{place.name}</Text>
+          <Text style={styles.meta}>
+            {place.city || 'Unknown'}
+            {place.address ? ` • ${place.address}` : ''}
+          </Text>
+
+          {hasStatsRating && (
+            <Text style={styles.meta}>⭐ {place.stats.avgRating.toFixed(1)} rating</Text>
+          )}
+
+          {hasTags && (
+            <View style={styles.tagsRow}>
+              {place.tags.slice(0, 3).map((pt: any) => {
+                const label = pt?.tag?.displayName || pt?.tag?.name || pt?.displayName || pt?.name;
+                return (
+                  <View key={pt.tagId || pt.id || label} style={styles.tagChip}>
+                    <Text style={styles.tagText}>{label}</Text>
+                  </View>
+                );
+              })}
             </View>
-          ))}
+          )}
         </View>
-      </View>
       </Animated.View>
     </TouchableOpacity>
   );
@@ -106,9 +128,13 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 4,
   },
-  image: {
-    width: '100%',
-    height: 200,
+  cardHorizontal: {
+    width: 220,
+    marginRight: 14,
+  },
+  image: { width: '100%', height: 200 },
+  imageHorizontal: {
+    height: 130,
   },
   imagePlaceholder: {
     alignItems: 'center',
@@ -120,9 +146,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  content: {
-    padding: 16,
-  },
+  content: { padding: 16 },
   name: {
     fontSize: 19,
     fontWeight: '700',

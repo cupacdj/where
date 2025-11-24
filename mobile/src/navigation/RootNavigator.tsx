@@ -7,8 +7,18 @@ import { SearchScreen } from '../screens/SearchScreen';
 import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { PlaceDetailsScreen } from '../screens/PlaceDetailsScreen';
 
 const Tab = createMaterialTopTabNavigator();
+
+const HomeStack = createNativeStackNavigator();
+const HomeStackScreen = () => (
+  <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+    <HomeStack.Screen name="HomeMain" component={HomeScreen} />
+    <HomeStack.Screen name="PlaceDetails" component={PlaceDetailsScreen} />
+  </HomeStack.Navigator>
+);
 
 export const RootNavigator = () => {
   const insets = useSafeAreaInsets();
@@ -51,7 +61,7 @@ export const RootNavigator = () => {
       
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeStackScreen}
         options={{
           tabBarIcon: ({ color }) => <Ionicons name="home" size={22} color={color} />,
         }}

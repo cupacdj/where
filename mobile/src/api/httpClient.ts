@@ -14,7 +14,7 @@ const ENV_BASE =
   (Constants.expoConfig?.extra as any)?.EXPO_PUBLIC_API_BASE_URL ||
   (globalThis as any).process?.env?.API_BASE_URL;
 
-const API_BASE_URL = ENV_BASE || DEFAULT_LOCAL;
+export const API_BASE_URL = ENV_BASE || DEFAULT_LOCAL; // exported for image URL prefix
 
 async function request<T>(path: string, options: RequestInit = {}, timeoutMs = 10000): Promise<T> {
   const url = `${API_BASE_URL}${path}`;

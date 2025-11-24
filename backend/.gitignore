@@ -49,3 +49,6 @@ prisma/generated/
 .vscode/
 .history/
 .settings/
+
+#  no uploads
+uploads/
