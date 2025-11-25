@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, ActivityIndicator, TouchableOpacity, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
@@ -15,6 +15,8 @@ export const PlaceDetailsScreen: React.FC = () => {
     queryKey: ['place', placeId],
     queryFn: () => placesApi.getById(placeId),
   });
+  const [imageModalVisible, setImageModalVisible] = React.useState(false);
+  const [fullscreenUrl, setFullscreenUrl] = React.useState<string | null>(null);
 
   if (isLoading) return <ActivityIndicator style={{ marginTop: 40 }} color="#0284c7" />;
   if (error || !data) return <Text style={{ margin: 16, color: '#dc2626' }}>Failed to load place</Text>;
@@ -22,11 +24,27 @@ export const PlaceDetailsScreen: React.FC = () => {
   const primary = data.images.find((i: any) => i.isPrimary) || data.images[0];
   const heroUrl = primary?.url?.startsWith('/') ? `${API_BASE_URL}${primary.url}` : primary?.url;
 
+  const openFullscreen = (url: string | null) => {
+    if (!url) return;
+    setFullscreenUrl(url);
+    setImageModalVisible(true);
+  };
+
+  const closeFullscreen = () => {
+    setImageModalVisible(false);
+    setFullscreenUrl(null);
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top','left','right']}>
       {heroUrl && (
         <View>
-          <Image source={{ uri: heroUrl }} style={styles.hero} />
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => openFullscreen(heroUrl)}
+          >
+            <Image source={{ uri: heroUrl }} style={styles.hero} />
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.backBtn}
             onPress={() => nav.goBack()}
@@ -59,10 +77,47 @@ export const PlaceDetailsScreen: React.FC = () => {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }}>
           {data.images.map((img: any) => {
             const u = img.url.startsWith('/') ? `${API_BASE_URL}${img.url}` : img.url;
-            return <Image key={img.id} source={{ uri: u }} style={styles.galleryImg} />;
+            return (
+              <TouchableOpacity
+                key={img.id}
+                activeOpacity={0.9}
+                onPress={() => openFullscreen(u)}
+              >
+                <Image source={{ uri: u }} style={styles.galleryImg} />
+              </TouchableOpacity>
+            );
           })}
         </ScrollView>
       </ScrollView>
+
+      {/* Fullscreen image modal */}
+      <Modal
+        visible={imageModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeFullscreen}
+      >
+        <TouchableOpacity
+          style={styles.modalBackdrop}
+          activeOpacity={1}
+          onPress={closeFullscreen}
+        >
+          <TouchableOpacity
+            style={styles.modalCloseBtn}
+            activeOpacity={0.8}
+            onPress={closeFullscreen}
+          >
+            <Text style={styles.modalCloseText}>✕</Text>
+          </TouchableOpacity>
+          {fullscreenUrl && (
+            <Image
+              source={{ uri: fullscreenUrl }}
+              style={styles.modalImage}
+              resizeMode="contain"
+            />
+          )}
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -105,5 +160,32 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#0f172a',
     marginTop: -2,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.94)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalImage: {
+    width: '100%',
+    height: '80%',
+  },
+  modalCloseBtn: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    zIndex: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(15,23,42,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCloseText: {
+    color: '#f9fafb',
+    fontSize: 20,
+    fontWeight: '700',
   },
 });

@@ -1,34 +1,25 @@
 import React from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HomeScreen } from '../screens/HomeScreen';
 import { AccountScreen } from '../screens/AccountScreen';
 import { AssistantScreen } from '../screens/AssistantScreen';
 import { SearchScreen } from '../screens/SearchScreen';
-import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { PlaceDetailsScreen } from '../screens/PlaceDetailsScreen';
+import { Ionicons } from '@expo/vector-icons';
 
 const Tab = createMaterialTopTabNavigator();
+const RootStack = createNativeStackNavigator();
 
-const HomeStack = createNativeStackNavigator();
-const HomeStackScreen = () => (
-  <HomeStack.Navigator screenOptions={{ headerShown: false }}>
-    <HomeStack.Screen name="HomeMain" component={HomeScreen} />
-    <HomeStack.Screen name="PlaceDetails" component={PlaceDetailsScreen} />
-  </HomeStack.Navigator>
-);
-
-export const RootNavigator = () => {
+const Tabs = () => {
   const insets = useSafeAreaInsets();
-
   return (
     <Tab.Navigator
       initialRouteName="Home"
       tabBarPosition="bottom"
-      screenOptions={({ route }) => ({
-        // 👇 swipe BETWEEN TABS is disabled ONLY on Home
-        swipeEnabled: route.name !== 'Home',
+      screenOptions={{
+        swipeEnabled: false, // disable swipe between tabs
         tabBarShowIcon: true,
         tabBarIndicatorStyle: {
           backgroundColor: '#0284c7',
@@ -51,44 +42,45 @@ export const RootNavigator = () => {
         tabBarActiveTintColor: '#0284c7',
         tabBarInactiveTintColor: '#64748b',
         tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
-      })}
+      }}
     >
       <Tab.Screen
         name="Account"
         component={AccountScreen}
         options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="person" size={22} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Ionicons name="person" size={22} color={color} />,
         }}
       />
       <Tab.Screen
         name="Home"
-        component={HomeStackScreen}
+        component={HomeScreen}
         options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="home" size={22} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Ionicons name="home" size={22} color={color} />,
         }}
       />
       <Tab.Screen
         name="Search"
         component={SearchScreen}
         options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="search" size={22} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Ionicons name="search" size={22} color={color} />,
         }}
       />
       <Tab.Screen
         name="Assistant"
         component={AssistantScreen}
         options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="chatbubbles" size={22} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Ionicons name="chatbubbles" size={22} color={color} />,
         }}
       />
     </Tab.Navigator>
+  );
+};
+
+export const RootNavigator = () => {
+  return (
+    <RootStack.Navigator screenOptions={{ headerShown: false }}>
+      <RootStack.Screen name="Tabs" component={Tabs} />
+      <RootStack.Screen name="PlaceDetails" component={PlaceDetailsScreen} />
+    </RootStack.Navigator>
   );
 };
