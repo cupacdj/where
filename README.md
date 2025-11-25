@@ -1,189 +1,173 @@
-# NightOut – Belgrade Date & Café Finder
+# WHERE – Belgrade Date & Café Finder
 
-This repository contains a **monorepo** for the NightOut app:
-
-- `backend/` – NestJS + Prisma + PostgreSQL API
-- `mobile/` – React Native + Expo mobile app (Android & iOS)
-
-The goal is to provide a **clean base project** that you can extend:
-- Home tab: recommended & trending cafés / restaurants with filters.
-- Account tab: login/register, visited places, reviews.
-- Assistant tab: AI chat that helps users pick a place.
-
-> NOTE: Treat this as a starting point. You can adjust versions, add features, and refine architecture as the project grows.
+WHERE is a full‑stack mobile app for discovering cafés and similar places in Belgrade.  
+It focuses on real‑world use cases like “quiet place to study”, “romantic date spot”, or “pet‑friendly brunch”.
 
 ---
 
-## 1. Prerequisites
+## Features
 
-Install these globally on your machine:
+### Mobile app (Expo / React Native)
 
-- **Node.js** (LTS recommended, e.g. 18 or 20)
-- **npm** (comes with Node)
-- **Git**
-- **PostgreSQL** (local or via Docker)
-- **Expo tooling**
-  - Install the **Expo Go** app on your phone (Android / iOS) for easy testing.
+- **Home tab**
+  - Lists places grouped by type (e.g. CAFE).
+  - Horizontal, swipeable carousels of places with:
+    - Primary image
+    - Name, city, address
+    - Top tags (e.g. “Specialty coffee”, “Quiet / relaxed”)
+  - Tapping a card opens a **Place Details** screen.
 
----
+- **Place Details**
+  - Hero image with fullscreen zoom.
+  - Gallery of all images (also zoomable).
+  - Description, address, city.
+  - Tags (categories) and average rating (from stats).
+  - Working hours per weekday.
 
-## 2. Backend Setup (NestJS + Prisma + PostgreSQL)
+- **Search tab**
+  - Text search by place name, description, city, or address.
+  - **“Select categories”** filter panel:
+    - Categories are loaded from backend `Tag` seed (quiet, garden_terrace, laptop_friendly, etc.).
+    - Selecting categories filters places by tags.
+  - Combined search: query + multiple categories at once.
+  - Results shown as reusable `PlaceCard` components; tapping opens Place Details.
 
-### 2.1. Database
+- **Account tab**
+  - Signup / login with email or username + password.
+  - Profile view with:
+    - Avatar (local image upload, stored on device / profile).
+    - Name, surname, email.
+    - Simple stats cards (favorites / visited / reviews placeholders).
+  - Settings modal:
+    - Edit name & surname.
+    - Change password (wired to backend `/auth/change-password`).
 
-Create a PostgreSQL database, for example:
-
-```sql
-CREATE DATABASE nightout_db;
-```
-
-Remember your DB credentials (user, password, host, port, db name).
-
-### 2.2. Configure backend
-
-```bash
-cd backend
-cp .env.example .env
-```
-
-Edit `.env` and set your database URL, e.g.:
-
-```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/nightout_db?schema=public"
-PORT=4000
-OPENAI_API_KEY=your_openai_api_key_here
-```
-
-### 2.3. Install dependencies
-
-```bash
-cd backend
-npm install
-```
-
-### 2.4. Prisma migrations
-
-Generate the DB schema from `prisma/schema.prisma`:
-
-```bash
-npx prisma migrate dev --name init
-# and generate the client (if not auto-generated)
-npx prisma generate
-```
-
-### 2.5. Run the backend
-
-```bash
-npm run start:dev
-```
-
-The API will be available at:
-
-```text
-http://localhost:4000
-```
-
-Check:
-
-```bash
-curl http://localhost:4000/health
-```
-
-You should get a small JSON `{ "status": "ok" }`.
+- **Assistant tab**
+  - Simple chat UI (mock AI for now).
+  - Animated bubbles, typing indicator, keyboard‑aware layout.
+  - Designed to later integrate a real recommendation engine.
 
 ---
 
-## 3. Mobile Setup (React Native + Expo)
+## Backend (NestJS + Prisma + PostgreSQL)
 
-> **Hint**: If `npm install` for the mobile project gives version conflicts,  
-> you can create a fresh Expo app with `npx create-expo-app` and copy the `src/` folder + config files from this template.
+### Tech stack
 
-### 3.1. Configure mobile app
+- **NestJS** for the HTTP API
+- **Prisma** as ORM
+- **PostgreSQL** as the database
+- **JWT** (Passport) for authentication
+- Static file serving for uploaded images (`/uploads`)
 
-```bash
-cd mobile
-cp .env.example .env
-```
+### Main modules
 
-Set the backend URL in `.env`:
+- **Auth**
+  - `POST /auth/register` – register user.
+  - `POST /auth/login` – login with email or username + password.
+  - `POST /auth/change-password` – authenticated password change.
 
-```env
-API_BASE_URL=http://localhost:4000
-```
+- **Users**
+  - `GET /users` – list basic user info (for debugging / admin usage).
 
-> On a physical phone, replace `localhost` with your computer’s LAN IP (e.g. `http://192.168.0.10:4000`).
+- **Places**
+  - `GET /places` – list places (used by Home), returns:
+    - `id`, `name`, `type`, `city`, `primaryImage`.
+  - `GET /places/:id` – full place details, including:
+    - Images (with fully qualified URLs)
+    - Tags (joined through `PlaceTag`)
+    - Working hours
+    - Stats (avgRating, totals)
+  - `GET /places/search` – search endpoint used by Search tab:
+    - `q` – free text (name, description, city, address).
+    - `tags` – comma‑separated tag names.
+    - `type` – optional `PlaceType` filter.
+  - `GET /places/tags` – returns all `Tag` rows (seeded categories) for the Search UI.
 
-### 3.2. Install dependencies
-
-```bash
-cd mobile
-npm install
-```
-
-### 3.3. Run the app
-
-```bash
-npm run start
-# or
-npx expo start
-```
-
-This opens Expo Dev Tools in your browser. Then:
-
-- Scan the QR code with Expo Go on your phone, **or**
-- Press `a` for Android emulator, `i` for iOS simulator (macOS only).
-
----
-
-## 4. Project Structure
-
-```text
-nightout-base/
-  README.md
-
-  backend/
-    src/
-      main.ts
-      app.module.ts
-      app.controller.ts
-      app.service.ts
-      prisma/
-        prisma.module.ts
-        prisma.service.ts
-      modules/
-        users/
-        places/
-    prisma/
-      schema.prisma
-    .env.example
-    package.json
-    tsconfig.json
-    tsconfig.build.json
-    nest-cli.json
-
-  mobile/
-    App.tsx
-    app.json
-    babel.config.js
-    tsconfig.json
-    .env.example
-    src/
-      navigation/
-      screens/
-      api/
-      state/
-      components/
-      types/
-```
+- **Place Images**
+  - `POST /places/:placeId/images/upload` – upload an image (Multer + disk storage).
+  - `POST /places/:placeId/images/import` – download from external URL and store locally.
+  - `GET /places/:placeId/images` – list images.
+  - `DELETE /places/:placeId/images/:imageId` – delete image.
+  - `PATCH /places/:placeId/images/:imageId/primary` – mark image as primary.
+  - Files are stored under `backend/uploads/places`, exposed via `/uploads/...`.
 
 ---
 
-## 5. Next Steps
+## Data model (Prisma)
 
-- Implement real auth (register/login, JWT).
-- Add AI assistant endpoint in backend and hook it up to the Assistant tab.
-- Implement search & filter logic on the `/places` endpoint.
-- Add seeding scripts for Belgrade cafés & restaurants.
-- Implement events/parties tables later and show them on a new tab or inside the Home flow.
+Key models in `prisma/schema.prisma`:
 
-Have fun building 🚀
+- `Place` – core entity describing a café / venue.
+- `Tag` – categorical labels (e.g. `quiet`, `specialty_coffee`, `garden_terrace`) grouped by `TagCategory`.
+- `PlaceTag` – many‑to‑many join between `Place` and `Tag`.
+- `PlaceImage` – image metadata (url, isPrimary, order).
+- `PlaceWorkingHour` – working hours per weekday.
+- `PlaceStats` – aggregate stats (visits, reviews, avgRating).
+- `User`, `Review`, `Visit`, `Favorite` – user‑side entities.
+
+Seeds in `backend/prisma/seed.ts` create:
+
+- A set of reusable tags (quiet, lively, romantic, laptop_friendly, etc.).
+- A curated list of Belgrade specialty coffee places with:
+  - Descriptions, addresses, working hours, tags.
+  - Local image URLs (`/uploads/places/{slug}.jpg`) – you provide actual image files.
+
+---
+
+## Running locally (high‑level)
+
+Backend:
+
+1. Set `DATABASE_URL` and optionally `PUBLIC_BASE_URL` in `backend/.env`.
+2. Run Prisma migrations and seed:
+   ```bash
+   cd backend
+   npx prisma migrate dev
+   npx ts-node prisma/seed.ts
+   ```
+3. Start NestJS API:
+   ```bash
+   npm run start:dev
+   ```
+
+Mobile:
+
+1. Configure API base in `mobile/.env`:
+   ```env
+   EXPO_PUBLIC_API_BASE_URL=http://YOUR_LOCAL_IP:4000
+   ```
+2. Install dependencies and run Expo:
+   ```bash
+   cd mobile
+   npm install
+   npx expo start
+   ```
+
+---
+
+## Navigation structure
+
+- Root **Stack Navigator**
+  - `Tabs` (bottom Material Top Tabs)
+    - `Account`
+    - `Home`
+    - `Search`
+    - `Assistant`
+  - `PlaceDetails` – shared details screen, navigated from:
+    - Home carousels (`PlaceCard`)
+    - Search results (`PlaceCard`)
+
+---
+
+## TODO / Future ideas
+
+- Real AI integration in Assistant (recommendation engine using place stats + tags).
+- Favorites / “Save place” from Place Details, synced with backend.
+- Auth‑protected “My visits” and review creation.
+- Per‑user preferences (e.g. noise tolerance, price sensitivity) to refine search & Assistant results.
+- Theming (light / dark) extended across all components.
+
+This repo is structured for easy extension: the backend is modular (NestJS) and the mobile app heavily reuses `PlaceCard` and common layouts so you can add new views quickly.
+
+
+
