@@ -8,6 +8,7 @@ import { PlacesModule } from './modules/places/places.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PlaceImagesModule } from './modules/place-images/place-images.module';
 import { PlaceExistsMiddleware } from './middleware/placeExists.middleware';
+import { FavoritesModule } from './modules/favorites/favorites.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { PlaceExistsMiddleware } from './middleware/placeExists.middleware';
     PlacesModule,
     AuthModule,
     PlaceImagesModule,
+    FavoritesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

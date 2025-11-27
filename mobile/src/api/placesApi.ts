@@ -16,5 +16,23 @@ export const placesApi = {
     const path = qs ? `/places/search?${qs}` : '/places/search';
     return httpClient.get<Place[]>(path);
   },
-  getTags: () => httpClient.get<Array<{ id: string; name: string; displayName?: string; category: string }>>('/places/tags'),
+  getTags: () =>
+    httpClient.get<Array<{ id: string; name: string; displayName?: string; category: string }>>(
+      '/places/tags',
+    ),
+
+  // favorites
+  toggleFavorite: (placeId: string) =>
+    httpClient.post<{ favorited: boolean }>(`/favorites/${placeId}/toggle`, {}),
+  getFavorites: () =>
+    httpClient.get<
+      Array<
+        Place & {
+          primaryImage?: string | null;
+          favoritedAt?: string;
+        }
+      >
+    >('/favorites'),
+  isFavorite: (placeId: string) =>
+    httpClient.get<{ favorited: boolean }>(`/favorites/${placeId}`),
 };

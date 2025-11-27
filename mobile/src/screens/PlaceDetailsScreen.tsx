@@ -6,9 +6,11 @@ import { useQuery } from '@tanstack/react-query';
 import { placesApi } from '../api/placesApi';
 import { API_BASE_URL } from '../api/httpClient';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext';
 
 export const PlaceDetailsScreen: React.FC = () => {
   const nav = useNavigation<any>();
+  const { user, logout } = useAuth();
   const { params } = useRoute<any>();
   const { placeId } = params;
   const { data, isLoading, error } = useQuery({
@@ -17,6 +19,38 @@ export const PlaceDetailsScreen: React.FC = () => {
   });
   const [imageModalVisible, setImageModalVisible] = React.useState(false);
   const [fullscreenUrl, setFullscreenUrl] = React.useState<string | null>(null);
+  const [favorited, setFavorited] = React.useState<boolean | null>(null);
+  const [favBusy, setFavBusy] = React.useState(false);
+
+  // after data load, check favorite
+  React.useEffect(() => {
+    if (!data || !user) return;
+    placesApi
+      .isFavorite(placeId)
+      .then((res) => setFavorited(res.favorited))
+      .catch((err) => {
+        // If unauthorized, it means token expired. Logout user.
+        if (err.status === 401 || err.message?.includes('Unauthorized')) {
+          logout();
+        }
+        setFavorited(false);
+      });
+  }, [data, placeId, user]);
+
+  const toggleFavorite = async () => {
+    if (!data || favBusy || !user) return;
+    try {
+      setFavBusy(true);
+      const res = await placesApi.toggleFavorite(placeId);
+      setFavorited(res.favorited);
+    } catch (e: any) {
+      if (e.status === 401 || e.message?.includes('Unauthorized')) {
+        logout();
+      }
+    } finally {
+      setFavBusy(false);
+    }
+  };
 
   if (isLoading) return <ActivityIndicator style={{ marginTop: 40 }} color="#0284c7" />;
   if (error || !data) return <Text style={{ margin: 16, color: '#dc2626' }}>Failed to load place</Text>;
@@ -54,6 +88,19 @@ export const PlaceDetailsScreen: React.FC = () => {
               <Text style={styles.backBtnIcon}>‹</Text>
             </View>
           </TouchableOpacity>
+          {/* Favorite heart in top-right */}
+          {user && (
+            <TouchableOpacity
+              style={styles.favBtn}
+              onPress={toggleFavorite}
+              activeOpacity={0.8}
+              disabled={favBusy || favorited === null}
+            >
+              <Text style={[styles.favIcon, favorited && styles.favIconActive]}>
+                {favorited ? '♥' : '♡'}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
       <ScrollView contentContainerStyle={styles.content}>
@@ -160,6 +207,29 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#0f172a',
     marginTop: -2,
+  },
+  favBtn: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  favIcon: {
+    fontSize: 20,
+    color: '#64748b',
+  },
+  favIconActive: {
+    color: '#dc2626',
   },
   modalBackdrop: {
     flex: 1,

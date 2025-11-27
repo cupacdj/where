@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base target="_self">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WHERE - Discover the Best Cafés in Belgrade</title>
+    <meta name="description" content="Find perfect spots in Belgrade for studying, dates, or pet-friendly brunches. AI-powered recommendations for your ideal café experience.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#8B5CF6",
+                        secondary: "#6366F1",
+                        accent: "#F59E0B",
+                        dark: "#1F2937",
+                        light: "#F9FAFB"
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-sans bg-light text-dark min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-map-marker-alt text-white text-sm"></i>
+                    </div>
+                    <span class="text-xl font-bold text-primary">WHERE</span>
+                </div>
+                
+                <div class="hidden md:flex space-x-8">
+                    <a href="#" class="text-gray-600 hover:text-primary transition-colors">Discover</a>
+                    <a href="#" class="text-gray-600 hover:text-primary transition-colors">Assistant</a>
+                    <a href="#" class="text-gray-600 hover:text-primary transition-colors">My Visits</a>
+                    <a href="#" class="text-gray-600 hover:text-primary transition-colors">Favorites</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                        Sign In
+                    </button>
+                    <button class="md:hidden text-gray-600">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-br from-primary to-secondary text-white py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6">Discover Belgrade's Hidden Gems</h1>
+                <p class="text-xl md:text-2xl mb-8 opacity-90">Find the perfect spot for studying, romantic dates, or pet-friendly brunches with AI-powered recommendations</p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button class="bg-accent text-dark px-8 py-4 rounded-lg font-semibold hover:bg-amber-500 transition-colors text-lg">
+                        <i class="fas fa-download mr-2"></i>Download App
+                    </button>
+                    <button class="bg-white text-primary px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors text-lg">
+                        <i class="fas fa-play mr-2"></i>Watch Demo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Why Choose WHERE?</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="text-center p-6 rounded-lg bg-light hover:shadow-lg transition-shadow">
+                    <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-robot text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">AI Assistant</h3>
+                    <p class="text-gray-600">Get personalized recommendations based on your preferences, noise tolerance, and budget</p>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="text-center p-6 rounded-lg bg-light hover:shadow-lg transition-shadow">
+                    <div class="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-heart text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Save Favorites</h3>
+                    <p class="text-gray-600">Bookmark your favorite spots and access them across all your devices</p>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="text-center p-6 rounded-lg bg-light hover:shadow-lg transition-shadow">
+                    <div class="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-star text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Share Experiences</h3>
+                    <p class="text-gray-600">Rate and review places to help others discover the best spots in Belgrade</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases Section -->
+    <section class="py-16 bg-light">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Find Your Perfect Spot</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Use Case 1 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                    <img src="https://picsum.photos/300/200?random=1" alt="Quiet study space in Belgrade café" class="w-full h-48 object-cover" loading="lazy">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Study Spaces</h3>
+                        <p class="text-gray-600 mb-4">Find quiet cafés with good WiFi and power outlets</p>
+                        <span class="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">Quiet</span>
+                    </div>
+                </div>
+                
+                <!-- Use Case 2 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                    <img src="https://picsum.photos/300/200?random=2" alt="Romantic date spot in Belgrade" class="w-full h-48 object-cover" loading="lazy">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Romantic Dates</h3>
+                        <p class="text-gray-600 mb-4">Discover cozy spots perfect for intimate moments</p>
+                        <span class="inline-block bg-pink-100 text-pink-800 px-3 py-1 rounded-full text-sm">Romantic</span>
+                    </div>
+                </div>
+                
+                <!-- Use Case 3 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                    <img src="https://picsum.photos/300/200?random=3" alt="Pet-friendly café in Belgrade" class="w-full h-48 object-cover" loading="lazy">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Pet-Friendly</h3>
+                        <p class="text-gray-600 mb-4">Bring your furry friends to welcoming establishments</p>
+                        <span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Pet-Friendly</span>
+                    </div>
+                </div>
+                
+                <!-- Use Case 4 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                    <img src="https://picsum.photos/300/200?random=4" alt="Business meeting café in Belgrade" class="w-full h-48 object-cover" loading="lazy">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Business Meetings</h3>
+                        <p class="text-gray-600 mb-4">Professional environments for productive discussions</p>
+                        <span class="inline-block bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">Professional</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- App Preview Section -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col lg:flex-row items-center gap-12">
+                <div class="lg:w-1/2">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">Smart Recommendations</h2>
+                    <p class="text-lg text-gray-600 mb-6">Our AI assistant learns your preferences over time to suggest places that match your exact needs:</p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-primary mr-3 text-xl"></i>
+                            <span>Noise level preferences</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-primary mr-3 text-xl"></i>
+                            <span>Budget sensitivity</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-primary mr-3 text-xl"></i>
+                            <span>Atmosphere preferences</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-primary mr-3 text-xl"></i>
+                            <span>Accessibility needs</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lg:w-1/2 relative">
+                    <div class="bg-gradient-to-br from-primary to-secondary rounded-2xl p-8 text-white">
+                        <div class="bg-white rounded-lg p-4 mb-4">
+                            <p class="text-dark">"Find me a quiet café in Dorćol with good coffee and power outlets"</p>
+                        </div>
+                        <div class="bg-gray-800 rounded-lg p-4">
+                            <p>"Based on your preferences, I recommend Kafeterija Magazin. It has 4.5★ rating for quiet atmosphere and excellent coffee. 3 users confirmed power outlets available."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 bg-primary text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Explore Belgrade?</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">Join thousands of users discovering the best cafés and hidden gems in Serbia's capital city</p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button class="bg-accent text-dark px-8 py-4 rounded-lg font-semibold hover:bg-amber-500 transition-colors text-lg">
+                    <i class="fab fa-apple mr-2"></i>App Store
+                </button>
+                <button class="bg-white text-primary px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors text-lg">
+                    <i class="fab fa-google-play mr-2"></i>Google Play
+                </button>
+            </div>
+            
+            <p class="mt-6 text-sm opacity-80">Available on iOS and Android</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                            <i class="fas fa-map-marker-alt text-white text-sm"></i>
+                        </div>
+                        <span class="text-xl font-bold">WHERE</span>
+                    </div>
+                    <p class="text-gray-400">Discover Belgrade's best cafés and hidden gems with AI-powered recommendations.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Explore</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Discover Places</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">AI Assistant</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">My Favorites</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">My Visits</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Company</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Connect</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-facebook-f text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-linkedin-in text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 WHERE Belgrade. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Define navigation items
+        const navItems = [
+            { "id": 1, "label": "Discover", "href": "#" },
+            { "id": 2, "label": "Assistant", "href": "#" },
+            { "id": 3, "label": "My Visits", "href": "#" },
+            { "id": 4, "label": "Favorites", "href": "#" }
+        ];
+
+        // Define use cases data
+        const useCases = [
+            { 
+                "id": 1, 
+                "title": "Study Spaces", 
+                "description": "Find quiet cafés with good WiFi and power outlets", 
+                "tag": "Quiet",
+                "tagColor": "green"
+            },
+            { 
+                "id": 2, 
+                "title": "Romantic Dates", 
+                "description": "Discover cozy spots perfect for intimate moments", 
+                "tag": "Romantic",
+                "tagColor": "pink"
+            },
+            { 
+                "id": 3, 
+                "title": "Pet-Friendly", 
+                "description": "Bring your furry friends to welcoming establishments", 
+                "tag": "Pet-Friendly",
+                "tagColor": "blue"
+            },
+            { 
+                "id": 4, 
+                "title": "Business Meetings", 
+                "description": "Professional environments for productive discussions", 
+                "tag": "Professional",
+                "tagColor": "purple"
+            }
+        ];
+
+        // Prevent default anchor behavior
+        document.addEventListener('DOMContentLoaded', function() {
+            const anchors = document.querySelectorAll('a[href="#"]');
+            anchors.forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

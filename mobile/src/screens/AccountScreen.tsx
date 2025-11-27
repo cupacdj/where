@@ -5,6 +5,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { AuthForm } from '../components/AuthForm';
 import { useAuth } from '../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import { placesApi } from '../api/placesApi';
+import { PlaceCard } from '../components/PlaceCard';
 
 export const AccountScreen: React.FC = () => {
   const { user, loading, logout, updateProfile } = useAuth();
@@ -15,6 +17,9 @@ export const AccountScreen: React.FC = () => {
   const [editPasswordNext, setEditPasswordNext] = useState('');
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const [avatarLoading, setAvatarLoading] = useState(false);
+  const [favoritesOpen, setFavoritesOpen] = useState(false);
+  const [favorites, setFavorites] = useState<any[] | null>(null);
+  const [favLoading, setFavLoading] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
@@ -106,6 +111,20 @@ export const AccountScreen: React.FC = () => {
     }
   };
 
+  const openFavorites = async () => {
+    if (!user) return;
+    setFavoritesOpen(true);
+    setFavLoading(true);
+    try {
+      const data = await placesApi.getFavorites();
+      setFavorites(data);
+    } catch {
+      setFavorites([]);
+    } finally {
+      setFavLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top','left','right']}>
       {user ? (
@@ -163,11 +182,13 @@ export const AccountScreen: React.FC = () => {
           <Text style={styles.emailText}>{user.email}</Text>
 
           <View style={styles.statsRow}>
-            <View style={styles.statCard}>
+            <TouchableOpacity style={styles.statCard} activeOpacity={0.8} onPress={openFavorites}>
               <Ionicons name="heart" size={24} color="#dc2626" />
-              <Text style={styles.statNumber}>0</Text>
+              <Text style={styles.statNumber}>
+                {favorites?.length ?? 0}
+              </Text>
               <Text style={styles.statLabel}>Favorites</Text>
-            </View>
+            </TouchableOpacity>
             <View style={styles.statCard}>
               <Ionicons name="location" size={24} color="#0284c7" />
               <Text style={styles.statNumber}>0</Text>
@@ -240,6 +261,53 @@ export const AccountScreen: React.FC = () => {
                       activeOpacity={0.8}
                     >
                       <Text style={[styles.modalBtnText, { color: '#64748b' }]}>Cancel</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            </TouchableOpacity>
+          </Modal>
+
+          {/* Favorites modal */}
+          <Modal visible={favoritesOpen} transparent animationType="slide">
+            <TouchableOpacity
+              style={styles.modalBackdrop}
+              activeOpacity={1}
+              onPress={() => setFavoritesOpen(false)}
+            >
+              <TouchableWithoutFeedback>
+                <View style={[styles.modalCard, { maxHeight: '80%' }]}>
+                  <View style={styles.modalHeader}>
+                    <Ionicons name="heart" size={28} color="#dc2626" />
+                    <Text style={styles.modalTitle}>Your Favorites</Text>
+                  </View>
+                  {favLoading ? (
+                    <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+                      <ActivityIndicator color="#0284c7" />
+                    </View>
+                  ) : favorites && favorites.length > 0 ? (
+                    <ScrollView
+                      style={{ maxHeight: 400 }}
+                      contentContainerStyle={{ paddingBottom: 12 }}
+                    >
+                      {favorites.map((p, idx) => (
+                        <View key={p.id} style={{ marginBottom: 12 }}>
+                          <PlaceCard place={p} index={idx} />
+                        </View>
+                      ))}
+                    </ScrollView>
+                  ) : (
+                    <Text style={{ color: '#64748b', fontSize: 14 }}>
+                      You don&apos;t have any favorites yet.
+                    </Text>
+                  )}
+                  <View style={styles.modalButtons}>
+                    <TouchableOpacity
+                      style={[styles.modalBtn, styles.modalBtnSecondary]}
+                      onPress={() => setFavoritesOpen(false)}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={[styles.modalBtnText, { color: '#64748b' }]}>Close</Text>
                     </TouchableOpacity>
                   </View>
                 </View>

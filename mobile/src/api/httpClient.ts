@@ -43,8 +43,15 @@ async function request<T>(path: string, options: RequestInit = {}, timeoutMs = 1
         else if (parsed.message) message = parsed.message;
         else if (parsed.error) message = parsed.error;
       } catch {}
-      console.warn('HTTP error', res.status, message);
-      throw new Error(message);
+
+      // Don't warn on 401 (Unauthorized) as it's often a valid state (expired token) handled by UI
+      if (res.status !== 401) {
+        console.warn('HTTP error', res.status, message);
+      }
+
+      const error = new Error(message);
+      (error as any).status = res.status;
+      throw error;
     }
 
     return res.json() as Promise<T>;
@@ -55,8 +62,11 @@ async function request<T>(path: string, options: RequestInit = {}, timeoutMs = 1
     if (err.message?.includes('Network request failed')) {
       throw new Error('Network error. Check API_BASE_URL / connectivity.');
     }
-    console.warn('Request error', err);
-    throw new Error(err.message || 'Unknown network error');
+    // Don't log 401 errors if they bubble up here
+    if (err.status !== 401) {
+      console.warn('Request error', err);
+    }
+    throw err;
   } finally {
     clearTimeout(t);
   }
